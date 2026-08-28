@@ -47,8 +47,28 @@ Credenciales de prueba (mismas del frontend):
 
 ## Integrar con el frontend
 
-El Angular actual (`appbanco/src/app/core/mock-api/mock-backend.service.ts` y los servicios que lo
-usan) sigue funcionando en memoria por ahora — este backend es independiente y no está conectado
-todavía. Para consumirlo desde Angular habría que reemplazar `AuthService`, `ProductsService` y
-`RequestsService` por versiones que usen `HttpClient` contra estas rutas, guardando el `token` en
-`SessionService` y enviándolo en cada request.
+El frontend [appbanco](https://github.com/omared/appbanco) ya está conectado: `AuthService`,
+`ProductsService` y `RequestsService` usan `HttpClient` contra estas rutas, con un interceptor que
+adjunta el `token` guardado en `SessionService` como header `Authorization: Bearer`. La URL base se
+controla con `environment.apiUrl` (`http://localhost:4000/api` en desarrollo).
+
+## Deploy (Render)
+
+El repo incluye un blueprint (`render.yaml`) para desplegar como Web Service en
+[Render](https://render.com):
+
+1. Entra a Render con tu cuenta de GitHub.
+2. **New +** → **Blueprint** → selecciona el repo `appbanco-backend`.
+3. Render lee `render.yaml` y crea el servicio (`npm ci && npm run build` / `npm start`, plan free).
+4. Click **Apply**. Al terminar el deploy, Render asigna una URL pública (algo como
+   `https://appbanco-backend.onrender.com`).
+
+`ALLOWED_ORIGIN` ya viene preconfigurado en `render.yaml` apuntando a
+`https://omared.github.io` (el origen de GitHub Pages del frontend). Si el frontend se sirve desde
+otro dominio, actualiza esa variable en el dashboard de Render.
+
+El plan free "duerme" el servicio tras ~15 min sin tráfico; la primera petición después de eso
+tarda 30-50s en responder mientras arranca de nuevo.
+
+Una vez desplegado, actualiza `environment.ts` (producción) del frontend con la URL real de Render
+y vuelve a publicar GitHub Pages.
